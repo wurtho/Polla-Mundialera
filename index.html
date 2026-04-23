@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Polla Mundialera 2026</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:15px;color:#1a1a1a;background:#f5f5f0;}
+.app{max-width:700px;margin:0 auto;padding:1rem;}
+.header{display:flex;align-items:baseline;gap:10px;margin-bottom:1.5rem;padding-top:.75rem;}
+.header h1{font-size:22px;font-weight:500;}
+.badge{display:inline-block;font-size:11px;padding:2px 10px;border-radius:99px;background:#e6f1fb;color:#0c447c;font-weight:500;}
+.tab-bar{display:flex;gap:4px;margin-bottom:1.5rem;border-bottom:1px solid #e0ddd6;overflow-x:auto;}
+.tab{padding:8px 14px;font-size:13px;cursor:pointer;border:none;background:none;color:#888;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;}
+.tab.active{color:#1a1a1a;border-bottom:2px solid #1a1a1a;font-weight:500;}
+.card{background:#fff;border:1px solid #e8e5dc;border-radius:12px;padding:1rem 1.25rem;margin-bottom:1rem;}
+.section-title{font-size:11px;font-weight:500;color:#888;text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;}
+input[type=text],input[type=number],input[type=password]{width:100%;padding:8px 10px;border-radius:8px;border:1px solid #ccc;font-size:14px;color:#1a1a1a;background:#fff;}
+input:focus{outline:none;border-color:#378ADD;}
+select{width:100%;padding:8px 10px;border-radius:8px;border:1px solid #ccc;font-size:14px;color:#1a1a1a;background:#fff;}
+.btn{padding:8px 16px;border-radius:8px;border:1px solid #ccc;background:#fff;cursor:pointer;font-size:14px;color:#1a1a1a;}
+.btn:hover{background:#f5f5f0;}
+.btn-primary{background:#1a1a1a;color:#fff;border-color:#1a1a1a;}
+.btn-primary:hover{opacity:.85;}
+.row{display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap;}
+.label{font-size:13px;color:#666;min-width:150px;}
+.notice{font-size:13px;color:#666;padding:8px 12px;background:#f5f5f0;border-radius:8px;margin-bottom:1rem;line-height:1.5;}
+.del{background:none;border:none;cursor:pointer;color:#ccc;font-size:18px;padding:0 4px;line-height:1;}
+.del:hover{color:#e24b4a;}
+table{width:100%;border-collapse:collapse;font-size:14px;}
+th{text-align:left;font-size:12px;font-weight:500;color:#888;padding:8px;border-bottom:1px solid #e8e5dc;}
+td{padding:8px;border-bottom:1px solid #f0ede4;}
+tr:last-child td{border-bottom:none;}
+.pts{font-weight:500;color:#185fa5;}
+.medal-1{color:#ba7517;font-weight:600;}
+.medal-2{color:#888;font-weight:600;}
+.medal-3{color:#993c1d;font-weight:600;}
+.prob-bar{height:5px;border-radius:3px;background:#e8e5dc;margin-top:3px;}
+.prob-fill{height:100%;border-radius:3px;background:#378ADD;transition:width .6s;}
+.pred-card{border:1px solid #e8e5dc;border-radius:12px;padding:.75rem 1rem;margin-bottom:8px;}
+.pred-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;}
+.pred-field label{font-size:12px;color:#888;display:block;margin-bottom:3px;}
+.tag{display:inline-block;font-size:11px;padding:2px 8px;border-radius:99px;background:#f0ede4;color:#666;}
+.tag-green{background:#e1f5ee;color:#085041;}
+.tag-amber{background:#faeeda;color:#633806;}
+.tag-blue{background:#e6f1fb;color:#0c447c;}
+.confirmed-badge{font-size:12px;color:#085041;margin-top:2px;}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <h1>Polla Mundialera</h1>
+    <span class="badge">Mundial 2026</span>
+  </div>
+
+  <div class="tab-bar">
+    <button class="tab active" onclick="setTab('tabla')">Tabla</button>
+    <button class="tab" onclick="setTab('predicciones')">Predicciones</button>
+    <button class="tab" onclick="setTab('torneo')">Torneo</button>
+    <button class="tab" onclick="setTab('admin')">Admin</button>
+    <button class="tab" onclick="setTab('config')">Config</button>
+  </div>
+
+  <!-- TABLA -->
+  <div id="tab-tabla">
+    <div class="notice" id="update-notice">Probabilidades calculadas simulando 25.000 escenarios.</div>
+    <div class="card" style="padding:0;overflow:hidden;">
+      <table>
+        <thead><tr>
+          <th style="width:36px;">#</th>
+          <th>Participante</th>
+          <th style="text-align:right;">Partidos</th>
+          <th style="text-align:right;">Extra</th>
+          <th style="text-align:right;">Total</th>
+          <th style="text-align:right;min-width:80px;">Chance</th>
+        </tr></thead>
+        <tbody id="ranking-body"></tbody>
+      </table>
+    </div>
+    <div style="font-size:12px;color:#aaa;margin-top:6px;">* Puntos extra solo de categorías ya confirmadas.</div>
+  </div>
+
+  <!-- PREDICCIONES -->
+  <div id="tab-predicciones" style="display:none;">
+    <div class="notice">Predicciones ingresadas antes del torneo. Solo el admin puede editarlas.</div>
+    <div id="pred-gate">
+      <div class="row" style="margin-bottom:1rem;">
+        <input type="password" id="pred-pw" placeholder="Contraseña admin" style="width:200px;"/>
+        <button class="btn btn-primary" onclick="predLogin()">Entrar</button>
+      </div>
+    </div>
+    <div id="pred-panel"></div>
+  </div>
+
+  <!-- TORNEO -->
+  <div id="tab-torneo" style="display:none;">
+    <div class="notice">Actualiza esto ~10 min al día consultando sofascore.com o fifa.com.</div>
+    <div id="torneo-gate">
+      <div class="row" style="margin-bottom:1rem;">
+        <input type="password" id="torneo-pw" placeholder="Contraseña admin" style="width:200px;"/>
+        <button class="btn btn-primary" onclick="torneoLogin()">Entrar</button>
+      </div>
+    </div>
+    <div id="torneo-panel" style="display:none;">
+      <div class="card">
+        <div class="section-title">Líderes actuales</div>
+        <div id="torneo-fields"></div>
+        <div class="row" style="margin-top:1rem;">
+          <label class="label">Partidos restantes</label>
+          <input type="number" id="partidos-restantes" min="0" value="64" style="width:80px;" onchange="saveState()"/>
+        </div>
+        <button class="btn btn-primary" style="width:100%;margin-top:1rem;" onclick="recalcular()">Recalcular tabla</button>
+      </div>
+      <div class="card">
+        <div class="section-title">Confirmar ganadores finales</div>
+        <div style="font-size:13px;color:#888;margin-bottom:10px;">Al confirmar se asignan los puntos definitivamente.</div>
+        <div id="confirmed-cats"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADMIN -->
+  <div id="tab-admin" style="display:none;">
+    <div class="card">
+      <div class="section-title">Puntos de partidos</div>
+      <div id="admin-gate">
+        <div class="row">
+          <input type="password" id="admin-pw" placeholder="Contraseña admin" style="width:200px;"/>
+          <button class="btn btn-primary" onclick="adminLogin()">Entrar</button>
+        </div>
+        <div style="font-size:12px;color:#aaa;margin-top:6px;">Contraseña por defecto: <strong>mundial2026</strong></div>
+      </div>
+      <div id="admin-panel" style="display:none;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+          <span class="tag tag-green">Sesión activa</span>
+          <button class="btn" onclick="adminLogout()">Salir</button>
+        </div>
+        <div class="section-title">Ingresa los puntos de partidos (copiados desde la app)</div>
+        <div id="match-inputs"></div>
+        <button class="btn btn-primary" style="width:100%;margin-top:1rem;" onclick="recalcular()">Recalcular tabla</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONFIG -->
+  <div id="tab-config" style="display:none;">
+    <div class="card">
+      <div class="section-title">Participantes</div>
+      <div id="participants-list"></div>
+      <div class="row" style="margin-top:8px;">
+        <input type="text" id="new-participant" placeholder="Nombre del participante"/>
+        <button class="btn" onclick="addParticipant()">+ Agregar</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="section-title">Sistema de puntos</div>
+      <div class="row"><label class="label">Acertar ganador/empate</label><input type="number" id="pts-winner" value="1" min="0" style="width:70px;" onchange="saveState()"/> pts</div>
+      <div class="row"><label class="label">Resultado exacto</label><input type="number" id="pts-exact" value="3" min="0" style="width:70px;" onchange="saveState()"/> pts</div>
+    </div>
+    <div class="card">
+      <div class="section-title">Categorías de puntos extra</div>
+      <div id="categories-list"></div>
+      <div class="row" style="margin-top:10px;flex-wrap:wrap;gap:8px;">
+        <input type="text" id="new-cat-name" placeholder="Nombre (ej: Mejor arquero)" style="flex:1;min-width:140px;"/>
+        <input type="number" id="new-cat-pts" value="9" min="1" style="width:70px;"/>
+        <button class="btn" onclick="addCategory()">+ Agregar</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="section-title">Contraseña admin</div>
+      <div class="row">
+        <input type="password" id="new-pw" placeholder="Nueva contraseña"/>
+        <button class="btn" onclick="changePw()">Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const DEF={
+  participants:['Jugador 1','Jugador 2','Jugador 3'],
+  scores:{},predictions:{},
+  categories:[
+    {id:'cat1',name:'Campeón del torneo',pts:9},
+    {id:'cat2',name:'Goleador del torneo',pts:9},
+    {id:'cat3',name:'Mejor jugador (MVP)',pts:6},
+    {id:'cat4',name:'Mejor arquero',pts:6}
+  ],
+  confirmedCats:{},torneoLeaders:{},
+  ptsWinner:1,ptsExact:3,partidosRestantes:64,adminPw:'mundial2026'
+};
+
+let S=JSON.parse(localStorage.getItem('pollaV2')||'null')||JSON.parse(JSON.stringify(DEF));
+let adminOk=false,torneoOk=false,predOk=false,probs={};
+
+function save(){localStorage.setItem('pollaV2',JSON.stringify(S));}
+
+function extraPts(name){
+  let p=0;
+  S.categories.forEach(cat=>{
+    if(S.confirmedCats[cat.id]){
+      const pred=((S.predictions[name]||{})[cat.id]||'').trim().toLowerCase();
+      const winner=(S.confirmedCats[cat.id]||'').trim().toLowerCase();
+      if(pred&&pred===winner)p+=cat.pts;
+    }
+  });
+  return p;
+}
+
+function totalPts(name){return parseFloat(S.scores[name]||0)+extraPts(name);}
+
+function monteCarlo(totals,remaining,sims=25000){
+  const names=Object.keys(totals);
+  const wins={};names.forEach(n=>wins[n]=0);
+  const ppp=(S.ptsWinner*0.6)+(S.ptsExact*0.08);
+  const maxExtra=S.categories.filter(c=>!S.confirmedCats[c.id]).reduce((a,c)=>a+c.pts,0);
+  for(let i=0;i<sims;i++){
+    const sim={};
+    names.forEach(n=>{sim[n]=totals[n]+(Math.random()*ppp*remaining)+(Math.random()*maxExtra*0.15);});
+    const w=names.reduce((a,b)=>sim[a]>=sim[b]?a:b);
+    wins[w]++;
+  }
+  const res={};names.forEach(n=>res[n]=Math.round(wins[n]/sims*100));
+  return res;
+}
+
+function recalcular(){
+  S.ptsWinner=parseInt(document.getElementById('pts-winner').value)||1;
+  S.ptsExact=parseInt(document.getElementById('pts-exact').value)||3;
+  const pr=document.getElementById('partidos-restantes');
+  if(pr)S.partidosRestantes=parseInt(pr.value)||0;
+  save();
+  const totals={};S.participants.forEach(n=>totals[n]=totalPts(n));
+  probs=monteCarlo(totals,S.partidosRestantes);
+  renderTabla();setTab('tabla');
+}
+
+function renderTabla(){
+  const totals={};S.participants.forEach(n=>totals[n]=totalPts(n));
+  const sorted=[...S.participants].sort((a,b)=>totals[b]-totals[a]);
+  const medals=['medal-1','medal-2','medal-3'];
+  const mtext=['1°','2°','3°'];
+  document.getElementById('ranking-body').innerHTML=sorted.map((name,i)=>{
+    const p=probs[name]||0,mp=parseFloat(S.scores[name]||0),ep=extraPts(name);
+    return`<tr>
+      <td class="${medals[i]||''}" style="width:36px;text-align:center;">${mtext[i]||i+1}</td>
+      <td style="font-weight:500;">${name}</td>
+      <td style="text-align:right;">${mp.toFixed(1)}</td>
+      <td style="text-align:right;color:#0f6e56;">${ep>0?'+'+ep:'—'}</td>
+      <td style="text-align:right;" class="pts">${totals[name].toFixed(1)}</td>
+      <td style="text-align:right;">
+        <span style="font-size:13px;font-weight:500;">${p}%</span>
+        <div class="prob-bar"><div class="prob-fill" style="width:${p}%"></div></div>
+      </td>
+    </tr>`;
+  }).join('');
+  const now=new Date();
+  document.getElementById('update-notice').textContent=
+    `Última actualización: ${now.getHours()}:${String(now.getMinutes()).padStart(2,'0')} — ${S.partidosRestantes} partidos restantes.`;
+}
+
+function renderPredictions(){
+  document.getElementById('pred-gate').style.display=predOk?'none':'block';
+  document.getElementById('pred-panel').innerHTML=S.participants.map(name=>{
+    const preds=S.predictions[name]||{};
+    const filled=S.categories.filter(c=>(preds[c.id]||'').trim()).length;
+    const fields=S.categories.map(cat=>`
+      <div class="pred-field">
+        <label>${cat.name} (${cat.pts}pts)</label>
+        ${predOk
+          ?`<input type="text" value="${preds[cat.id]||''}" placeholder="Nombre"
+              onchange="if(!S.predictions['${name}'])S.predictions['${name}']={};S.predictions['${name}']['${cat.id}']=this.value;save();"/>`
+          :`<div style="padding:6px 0;font-size:14px;color:${preds[cat.id]?'#1a1a1a':'#aaa'};">${preds[cat.id]||'—'}</div>`}
+      </div>`).join('');
+    return`<div class="pred-card">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span style="font-weight:500;font-size:14px;">${name}</span>
+        <span class="tag ${filled===S.categories.length?'tag-green':''}">${filled}/${S.categories.length}</span>
+      </div>
+      <div class="pred-grid">${fields}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderTorneoFields(){
+  document.getElementById('torneo-fields').innerHTML=S.categories.filter(c=>!S.confirmedCats[c.id]).map(cat=>`
+    <div class="row">
+      <label class="label" style="font-size:13px;">${cat.name}</label>
+      <input type="text" placeholder="Líder actual" value="${S.torneoLeaders[cat.id]||''}" style="flex:1;"
+        onchange="S.torneoLeaders['${cat.id}']=this.value;save();"/>
+    </div>`).join('');
+  document.getElementById('partidos-restantes').value=S.partidosRestantes;
+  document.getElementById('confirmed-cats').innerHTML=S.categories.map(cat=>{
+    const confirmed=S.confirmedCats[cat.id];
+    return`<div class="row" style="margin-bottom:10px;">
+      <div style="flex:1;">
+        <div style="font-size:13px;font-weight:500;">${cat.name}</div>
+        ${confirmed?`<div class="confirmed-badge">Confirmado: ${confirmed}</div>`:''}
+      </div>
+      ${confirmed
+        ?`<button class="btn" style="font-size:12px;padding:4px 10px;" onclick="delete S.confirmedCats['${cat.id}'];save();renderTorneoFields();">Desconfirmar</button>`
+        :`<input type="text" id="conf-${cat.id}" placeholder="Ganador final" value="${S.torneoLeaders[cat.id]||''}" style="width:160px;"/>
+          <button class="btn btn-primary" style="font-size:12px;padding:4px 12px;" onclick="confirmCat('${cat.id}')">Confirmar</button>`}
+    </div>`;
+  }).join('');
+}
+
+function confirmCat(catId){
+  const val=document.getElementById('conf-'+catId).value.trim();
+  if(!val)return;
+  S.confirmedCats[catId]=val;save();renderTorneoFields();recalcular();
+}
+
+function renderMatchInputs(){
+  document.getElementById('match-inputs').innerHTML=S.participants.map(name=>`
+    <div class="row">
+      <label class="label" style="font-size:13px;">${name}</label>
+      <input type="number" style="width:90px;" placeholder="Pts" value="${S.scores[name]||''}" min="0" step="0.5"
+        onchange="S.scores['${name}']=this.value;save();"/>
+    </div>`).join('');
+}
+
+function renderParticipants(){
+  document.getElementById('participants-list').innerHTML=S.participants.map((name,i)=>`
+    <div class="row">
+      <span style="flex:1;font-size:14px;">${name}</span>
+      <button class="del" onclick="S.participants.splice(${i},1);save();renderAll();">×</button>
+    </div>`).join('');
+}
+
+function renderCategories(){
+  document.getElementById('categories-list').innerHTML=S.categories.map((cat,i)=>`
+    <div class="row">
+      <span style="flex:1;font-size:14px;">${cat.name}</span>
+      <span class="tag">${cat.pts} pts</span>
+      <button class="del" onclick="S.categories.splice(${i},1);save();renderAll();">×</button>
+    </div>`).join('');
+}
+
+function renderAll(){
+  renderTabla();renderParticipants();renderCategories();renderMatchInputs();renderPredictions();
+  if(torneoOk)renderTorneoFields();
+}
+
+function addParticipant(){
+  const inp=document.getElementById('new-participant');
+  const n=inp.value.trim();
+  if(!n||S.participants.includes(n))return;
+  S.participants.push(n);inp.value='';save();renderAll();
+}
+
+function addCategory(){
+  const name=document.getElementById('new-cat-name').value.trim();
+  const pts=parseInt(document.getElementById('new-cat-pts').value)||9;
+  if(!name)return;
+  S.categories.push({id:'cat'+Date.now(),name,pts});
+  document.getElementById('new-cat-name').value='';save();renderAll();
+}
+
+function adminLogin(){
+  if(document.getElementById('admin-pw').value===S.adminPw){
+    adminOk=true;
+    document.getElementById('admin-gate').style.display='none';
+    document.getElementById('admin-panel').style.display='block';
+    renderMatchInputs();
+  }else alert('Contraseña incorrecta');
+}
+function adminLogout(){
+  adminOk=false;
+  document.getElementById('admin-gate').style.display='block';
+  document.getElementById('admin-panel').style.display='none';
+  document.getElementById('admin-pw').value='';
+}
+function torneoLogin(){
+  if(document.getElementById('torneo-pw').value===S.adminPw){
+    torneoOk=true;
+    document.getElementById('torneo-gate').style.display='none';
+    document.getElementById('torneo-panel').style.display='block';
+    renderTorneoFields();
+  }else alert('Contraseña incorrecta');
+}
+function predLogin(){
+  if(document.getElementById('pred-pw').value===S.adminPw){
+    predOk=true;renderPredictions();
+  }else alert('Contraseña incorrecta');
+}
+function changePw(){
+  const pw=document.getElementById('new-pw').value.trim();
+  if(!pw)return;S.adminPw=pw;save();
+  document.getElementById('new-pw').value='';alert('Contraseña actualizada.');
+}
+
+function setTab(tab){
+  ['tabla','predicciones','torneo','admin','config'].forEach((t,i)=>{
+    document.getElementById('tab-'+t).style.display=t===tab?'block':'none';
+    document.querySelectorAll('.tab')[i].classList.toggle('active',t===tab);
+  });
+  if(tab==='predicciones')renderPredictions();
+}
+
+document.getElementById('pts-winner').value=S.ptsWinner;
+document.getElementById('pts-exact').value=S.ptsExact;
+const t0={};S.participants.forEach(n=>t0[n]=totalPts(n));
+probs=monteCarlo(t0,S.partidosRestantes);
+renderAll();
+</script>
+</body>
+</html>
