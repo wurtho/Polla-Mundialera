@@ -208,7 +208,7 @@ input:focus{outline:none;border-color:#378ADD;}
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
-import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
+import { getAuth, GoogleAuthProvider, signInWithRedirect, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
 import { getFirestore, doc, getDoc, getDocs, setDoc, updateDoc, collection, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -224,6 +224,9 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
+
+// Handle redirect result on page load
+getRedirectResult(auth).catch(e => console.log('redirect result error', e));
 
 const ADMIN_EMAIL = "twurth2000@gmail.com";
 let currentUser = null;
@@ -257,7 +260,7 @@ const CATEGORIAS_INICIALES = [
 window.loginGoogle = async () => {
   const provider = new GoogleAuthProvider();
   try {
-    await signInWithPopup(auth, provider);
+    await signInWithRedirect(auth, provider);
   } catch(e) {
     document.getElementById('login-error').style.display='block';
     document.getElementById('login-error').textContent='Error al iniciar sesión. Intenta de nuevo.';
